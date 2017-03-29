@@ -14,7 +14,7 @@
 		"AllowCorrupted": [
 			"Tabula Rasa"
 		],
-		"MinIlvl": "50",
+		"MinIlvl": "1",
 		"Ignore": [
 			"Cherrubim's Maleficence",
 			"Abyssus",
@@ -33,7 +33,7 @@
 		"Debug": "false",
 		"LogVerbose": "true",
 		"ConsoleVerbose": "false",
-		"CleanFile": "false",
+		"CleanFile": "true",
 		"Alert": "true",
 		"AlertThreshold": {
 			"PercentHigh": "50",

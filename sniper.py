@@ -12,7 +12,11 @@ import os
 import json
 from pprint import pprint
 from difflib import SequenceMatcher
+from termcolor import colored, cprint
+import colorama
+import pyperclip
 # pylint: disable=W0312, C0301, C0111, C0103, C0330, W0602, C0111,
+colorama.init()
 
 armor_price = []
 weps_price = []
@@ -25,7 +29,6 @@ def get_config():
 	with open('config.json') as cfg:
 		data = json.load(cfg)
 		print('Config loaded:\n')
-		print(data)
 		return data
 
 config = get_config()
@@ -129,6 +132,7 @@ def writeFile(text):
 			f.write('\n')
 		return
 
+
 def links(sockets):
 	link_count = 0
 	for socket in sockets:
@@ -152,11 +156,6 @@ def uprint(*objects, sep=' ', end='\n', file=sys.stdout):
         f = lambda obj: str(obj).encode(enc, errors='backslashreplace').decode(enc)
         print(*map(f, objects), sep=sep, end=end, file=file)
 
-def validate_item(item):
-	skip = False
-	return(item)
-	#print(item.get('name'))
-
 def find_items(stashes):
 	# scan stashes available...
 	for stash in stashes:
@@ -177,13 +176,24 @@ def find_items(stashes):
 			skip = False
 			explicit = item.get('explicitMods')
 
-			validate_item(item)
-
 			ShowCorrupted = config['Filter']['ShowCorrupted']
 			AllowCorrupted = config['Filter']['AllowCorrupted']
 			IgnoreList = config['Filter']['Ignore']
 			MinProfit = float(config['Filter']['MinProfit'])
 
+			if (not skip) and item.get('league') != league:
+				dprint('Filter | League {} not {}'.format(item.get('league'), league))
+				skip = True
+
+			if (not skip) and (int(frameType) != 3 and int(frameType) != 4 and int(frameType) != 5 and int(frameType) != 6 and int(frameType) != 9):
+				dprint('Filter | Item type {} is not 3,4,5,6,9'.format(frameType))
+				skip = True
+
+			# for divination
+			if name is None or name == "":
+				name = typeLine
+
+			# Exclude any items not worth more than chaos
 			if price and name and 'chaos' in price:
 				try:
 					if not re.findall(r'\d+', price)[0]:
@@ -260,26 +270,27 @@ def find_items(stashes):
 						else:
 							alert = False
 
-						print(console)
+						cprint(console, 'yellow')
+						cprint (msg, 'cyan')
+						cprint('\n')
+						pyperclip.copy(msg)
 
 						try:
 							if alert != False:
 								vprint('Alert level: {}'.format(alert))
-								for _ in range(alert):
+								for i in range(alert):
 									print('\a')
 							writeFile(file_content)
-						except BaseException as e:
+						except:
 							print('error writing file')
-							print(e)
 
 					except BaseException as e:
-						exc_type, exc_tb = sys.exc_info()
+						exc_type, esc_obj, exc_tb = sys.exc_info()
 						fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 						print('Error in find_items:')
 						print(exc_type, fname, exc_tb.tb_lineno)
 						print(e)
-
-
+						pass
 
 def main():
 	global armor_price
@@ -288,7 +299,7 @@ def main():
 	global map_price
 	global flask_price
 
-	print("\nGimme gimme gimme....\n")
+	cprint("\nProcessing...\n", 'red')
 	writeFile('init')
 	url_api = "http://www.pathofexile.com/api/public-stash-tabs?id="
 
@@ -342,7 +353,7 @@ def main():
 			print("Closing sniper.py")
 			sys.exit(1)
 		except BaseException as e:
-			exc_type, exc_tb = sys.exc_info()
+			exc_type, esc_obj, exc_tb = sys.exc_info()
 			fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 			print('Error in main:')
 			print(exc_type, fname, exc_tb.tb_lineno)
